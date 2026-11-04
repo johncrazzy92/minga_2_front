@@ -27,12 +27,14 @@ const AuthorProfile = ({ oneAuthor }) => {
               {upper(oneAuthor.country) || oneAuthor.country || "country"}
             </p>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center gap-1.5">
             <BirthIcon />
             <p>
-              {oneAuthor.createdAt
-                ? oneAuthor.createdAt.slice(0, 10).replace(/-/g, "/")
-                : oneAuthor.createdAt}
+              {oneAuthor.date
+                ? new Date(oneAuthor.date).toISOString().slice(0, 10).replace(/-/g, "/")
+                : oneAuthor.createdAt
+                ? new Date(oneAuthor.createdAt).toISOString().slice(0, 10).replace(/-/g, "/")
+                : "Not specified"}
             </p>
           </div>
         </div>

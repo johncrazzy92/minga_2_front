@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import BadWordsFilter from 'bad-words';
 
-const EditComment = ({ edit, setEdit, user, token }) => {
+const EditComment = ({ edit, setEdit, _user, token }) => {
   const [commentText, setCommentText] = useState(edit.comment.text); // Estado local para el texto del comentario
   const commentInput = useRef();
   const dispatch = useDispatch();

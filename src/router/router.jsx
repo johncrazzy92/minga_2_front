@@ -13,11 +13,8 @@ import MangaForm from "../pages/MangaForm";
 import Register from "../components/Register";
 import Alert from "../components/Alert";
 import ChapterForm from "../components/ChapterForm";
-import NotAllow from "../components/NotAllow";
 import Donations from "../components/Donations";
-import { element } from "prop-types";
 import DonationOk from "../components/DonationOk";
-import authorsReducer from "../redux/reducers/me_authorsReducer";
 import ListComments from "../components/ListComment";
 import EditChapter from "../components/EditChapter";
 import { AdminPanel } from "../pages/AdminPanel";
@@ -25,9 +22,8 @@ import Verify from "../components/Verify";
 import Socket from "../components/componentesMangas/Socket";
 import Chatbot from "../components/componentesMangas/ChatBot";
 import UploadTest from "../components/pruebas/UploadTest";
+import ProtectedRoute from "../components/ProtectedRoute";
 
-
-const isLogged = authorsReducer.isLogged;
 const router = createBrowserRouter([
   {
     path: "/",
@@ -41,7 +37,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/author",
-    element: <LayoutProfileMe />,
+    element: (
+      <ProtectedRoute>
+        <LayoutProfileMe />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "/author/me",
@@ -71,7 +71,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/mymangas",
-    element: <MyMangas />,
+    element: (
+      <ProtectedRoute requiredRoles={[1, 2, 3]}>
+        <MyMangas />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/login",
@@ -79,7 +83,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/manga-form",
-    element: <LayoutProfileMe />,
+    element: (
+      <ProtectedRoute requiredRoles={[1, 2, 3]}>
+        <LayoutProfileMe />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "/manga-form",
@@ -97,23 +105,27 @@ const router = createBrowserRouter([
   },
   {
     path: "/chapter-form/:id",
-    element:  <ChapterForm /> 
+    element: (
+      <ProtectedRoute requiredRoles={[1, 2, 3]}>
+        <ChapterForm />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/edit/:manga_id",
-    element:  <EditChapter/>,
-  },
-  {
-    path: "/edit/:manga_id",
-    element: <EditChapter />,
+    element: (
+      <ProtectedRoute requiredRoles={[1, 2, 3]}>
+        <EditChapter />
+      </ProtectedRoute>
+    ),
   },
   {
     path: "/donations",
-    element: <Donations/>,
+    element: <Donations />,
   },
   {
     path: "/donationOk",
-    element: <DonationOk/>,
+    element: <DonationOk />,
   },
   {
     path: "/listComment",
@@ -121,25 +133,34 @@ const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <LayoutProfileMe />,
-    children: [{
-      path: "/admin",
-      element: <AdminPanel />
-    }]
-  }, {
+    element: (
+      <ProtectedRoute requiredRoles={[3]}>
+        <LayoutProfileMe />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        path: "/admin",
+        element: <AdminPanel />,
+      },
+    ],
+  },
+  {
     path: "/auth/verify",
     element: <Verify />,
   },
   {
     path: "/socket",
-    element: <Socket />
+    element: <Socket />,
   },
   {
     path: "/chat-bt",
-    element: <Chatbot />
+    element: <Chatbot />,
   },
-  {path: "/test",
-element: <UploadTest/>}
+  {
+    path: "/test",
+    element: <UploadTest />,
+  },
 ]);
 
 export default router;

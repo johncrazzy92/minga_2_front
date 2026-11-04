@@ -1,23 +1,18 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import apiClient from "../../services/apiClient.js";
 
-
-const deleteChapterAction = createAsyncThunk("deleteChapter", async ({ id, token }) => {
-  try {
-    const response = await axios.delete(
-      `https://backendminga.onrender.com/chapters/${id}?manga_id=65117d91d875b6549eeb2b41`,
-      {
-        headers: {
-          Authorization: 'Bearer ' + token,
-        },
-      }
-    );
-    console.log(response);
-    return response.data;
-  } catch (error) {
-    console.error(error);
-    throw error;
+const deleteChapterAction = createAsyncThunk(
+  "deleteChapter",
+  async ({ id, manga_id }, { rejectWithValue }) => {
+    try {
+      const url = manga_id ? `/chapters/${id}?manga_id=${manga_id}` : `/chapters/${id}`;
+      const response = await apiClient.delete(url);
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting chapter:", error);
+      return rejectWithValue(error.response?.data || { message: error.message });
+    }
   }
-});
+);
 
 export default deleteChapterAction;

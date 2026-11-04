@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
-import axios from "axios";
-
+import apiClient from "../services/apiClient.js";
 
 const Product = () => {
   const [preferenceId, setPreferenceId] = useState(null);
@@ -10,7 +9,7 @@ const Product = () => {
 
   const createPreference = async () => {
     try {
-      const response = await axios.post("https://backendminga.onrender.com/create_preference", {
+      const response = await apiClient.post("/create_preference", {
         description: "Donation",
         price: 100,
         quantity: 1,
@@ -19,7 +18,7 @@ const Product = () => {
       const { id } = response.data;
       return id;
     } catch (error) {
-      console.log(error);
+      console.error("Error creating MercadoPago preference:", error);
     }
   };
 

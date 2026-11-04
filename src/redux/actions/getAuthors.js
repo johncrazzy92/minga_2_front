@@ -1,20 +1,15 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import apiClient from "../../services/apiClient.js";
 
-
-const getAuthors = createAsyncThunk("getAuthors", async (token) => {
+const getAuthors = createAsyncThunk("getAuthors", async (token, { rejectWithValue }) => {
   try {
-    const authors = await axios.get("https://backendminga.onrender.com/authors/admin", {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    });
+    const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+    const authors = await apiClient.get("/authors/admin", config);
     return authors.data;
   } catch (error) {
-    console.log("error getAuthors", error);
-
+    console.error("error getAuthors", error);
+    return rejectWithValue(error.response?.data || { message: error.message });
   }
 });
 
-
-export { getAuthors } 
+export { getAuthors };

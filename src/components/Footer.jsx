@@ -2,17 +2,25 @@ import background from "../../public/img/2a878f6c93a6f35eec672a24a51c2284.png";
 import logo from "../../public/img/Logo Dos.png";
 import { Link } from "react-router-dom";
 
+const VITE_API_URL= import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 const Footer = () => {
-  
-
   return (
     <div className="w-full lg:bg-white flex flex-col gap-5 pt-1 xl:pt-9 xl:h-96">
       <img src={background} alt="Portada Jump" />
       <div className=" bg-white items-center justify-around gap-5 h-1/2 flex lg:h-72 py-8 lg:py-2 lg:pb-12 flex-col sm:flex-row">
-        <div className="gap-16 flex">
-          <Link to={"/"}>Home</Link>
-          <a href="">Mangas</a>
+        <div className="gap-8 flex items-center">
+          <Link to="/" className="hover:text-orange-600 transition">Home</Link>
+          <Link to="/mangas" className="hover:text-orange-600 transition">Mangas</Link>
+          <a
+            href={`${VITE_API_URL}/api-docs`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-orange-600 transition font-medium"
+            title="Interactive Swagger / OpenAPI Documentation"
+          >
+            API Docs
+          </a>
         </div>
         <div>
           <img src={logo} alt="logo minga" />
@@ -48,11 +56,11 @@ const Footer = () => {
               />
             </svg>
           </div>
-          <Link to={"/donations"}
-            className="flex items-center justify-center bg-gradient-to-t from-orange-500 to-orange-600 text-white gap-4 p-2 rounded"
-            href=""
+          <Link
+            to="/donations"
+            className="flex items-center justify-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium gap-3 py-2 px-5 rounded-xl shadow-sm hover:shadow transition cursor-pointer"
           >
-            Donate
+            <span>Donate</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"

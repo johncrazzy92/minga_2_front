@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import commentAction from '../redux/actions/commentAction';
 import createComment from '../redux/actions/createCommentAction';
@@ -12,7 +12,7 @@ import { formatDistanceToNow } from 'date-fns';
 const Comment = ({ open, setOpen, chapter_id, chapterName }) => {
   const comment = useRef();
   const { user, token } = useSelector(store => store.me_authorsReducer);
-  const { comments, error } = useSelector(store => store.commentReducer);
+  const { comments } = useSelector(store => store.commentReducer);
   const dispatch = useDispatch();
   const [edit, setEdit] = useState({
     show: false,

@@ -1,12 +1,10 @@
-import axios from "axios";
 import { useState, useEffect, useRef } from "react";
-import Modal from "react-modal"
-import Alert from '../components/componentesMangas/Alert.jsx'
+import Modal from "react-modal";
 import { useDispatch } from "react-redux";
+import apiClient from "../services/apiClient.js";
 import actions from "../../src/redux/actions/mangas.js";
+
 const { updateManga } = actions;
-
-
 
 const customStyles = {
   content: {
@@ -16,143 +14,132 @@ const customStyles = {
     bottom: 'auto',
     marginRight: '-50%',
     transform: 'translate(-50%, -50%)',
+    borderRadius: '1.25rem',
+    border: 'none',
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    padding: '2rem',
+    maxWidth: '450px',
+    width: '90%',
   },
 };
 
 Modal.setAppElement('#root');
 
-const EditModal = ({ setIsOpen, isOpen, manga, token, alert, setAlert, setShow }) => {
+const EditModal = ({ setIsOpen, isOpen, manga, setShow }) => {
   const dispatch = useDispatch();
   const titleInput = useRef();
   const categoryInput = useRef();
   const imageInput = useRef();
   const descriptionInput = useRef();
 
-  const [category, setCategory] = useState([]);
-
-
-
+  const [categories, setCategories] = useState([]);
 
   const onCloseModal = () => {
-    setIsOpen(false)
-  }
+    setIsOpen(false);
+  };
+
   useEffect(() => {
-    axios
-      .get("https://backendminga.onrender.com/categories")
+    apiClient
+      .get("/categories")
       .then((response) => {
-        setCategory(response.data.response);
-        console.log(response)
+        setCategories(response.data.response || []);
       })
       .catch((error) => {
-        console.log(error);
+        console.error("Error fetching categories:", error);
       });
   }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onCloseModal();
+    if (setShow) setShow(true);
+
+    const selectedCategoryName = categoryInput.current?.value;
+    const matchedCategory = categories.find((c) => c.name === selectedCategoryName);
+    const category_id = matchedCategory?._id || manga.category_id?._id || manga.category_id;
+    const title = titleInput.current?.value || manga.title;
+    const cover_photo = imageInput.current?.value || manga.cover_photo;
+    const description = descriptionInput.current?.value || manga.description;
+    const id = manga._id;
+
+    dispatch(updateManga({ id, title, cover_photo, description, category_id }));
+  };
+
   return (
-    <>
-      <Modal
-        isOpen={isOpen}
-        onRequestClose={onCloseModal}
-        style={customStyles}
-        ClassName={"modal"}
-        overlayClassName={"modal-fondo"}
-        closeTimeoutMS={200}
-      >
-        <h1>{manga.title}</h1>
-        <hr />
-        <form className="flex flex-col gap-1">
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onCloseModal}
+      style={customStyles}
+      className="modal"
+      overlayClassName="modal-fondo"
+      closeTimeoutMS={200}
+    >
+      <h2 className="text-xl font-bold text-gray-800 mb-4">{manga?.title || "Edit Manga"}</h2>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 font-semibold mb-1">Title</label>
+          <input
+            className="border rounded-lg p-2 text-sm focus:outline-none focus:border-orange-500"
+            defaultValue={manga?.title || ""}
+            ref={titleInput}
+          />
+        </div>
 
-          <div className="flex-col flex">
-            <label>Title</label>
-            <input className="" placeholder={manga.title} ref={titleInput} />
-          </div>
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 font-semibold mb-1">Cover photo URL</label>
+          <input
+            className="border rounded-lg p-2 text-sm focus:outline-none focus:border-orange-500"
+            defaultValue={manga?.cover_photo || ""}
+            ref={imageInput}
+          />
+        </div>
 
-          <div className="flex flex-col">
-            <label>Cover photo</label>
-            <input className="form-control" placeholder={manga.cover_photo} ref={imageInput} />
-          </div>
-
-          <hr />
-          <div className="mb-2">
-            <label>Categorie</label>
-            <select
-              ref={categoryInput}
-              className="border-b border-1 border-black w-60"
-              id="category"
-              name="category"
-              defaultValue={""}
-            >
-              <option value="" disabled>{manga.category_id.name}
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 font-semibold mb-1">Category</label>
+          <select
+            ref={categoryInput}
+            className="border rounded-lg p-2 text-sm focus:outline-none focus:border-orange-500 bg-white"
+            defaultValue={manga?.category_id?.name || ""}
+          >
+            <option value="" disabled>
+              {manga?.category_id?.name || "Select Category"}
+            </option>
+            {categories.map((cat) => (
+              <option key={cat._id || cat.name} value={cat.name}>
+                {cat.name}
               </option>
-              {category &&
-                category.map((categoria) => {
-                  return (
-                    <option key={categoria.name} value={categoria.name}>
-                      {categoria.name}
-                    </option>
-                  );
-                })}
-            </select>
-          </div>
+            ))}
+          </select>
+        </div>
 
-          <div className="mb-2">
-            <label htmlFor="Description"></label>
-            <textarea
-              type="text"
-              className="form-control"
-              placeholder={manga.description}
-              cols="39"
-              rows="5"
-              ref={descriptionInput}
-            ></textarea>
-          </div>
+        <div className="flex flex-col">
+          <label className="text-xs text-gray-500 font-semibold mb-1">Description</label>
+          <textarea
+            className="border rounded-lg p-2 text-sm focus:outline-none focus:border-orange-500"
+            defaultValue={manga?.description || ""}
+            rows="4"
+            ref={descriptionInput}
+          ></textarea>
+        </div>
 
+        <div className="flex justify-end gap-3 mt-4">
+          <button
+            type="button"
+            onClick={onCloseModal}
+            className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-medium text-sm transition"
+          >
+            Cancel
+          </button>
           <button
             type="submit"
-            className="btn btn-primary"
-            onClick={(e) => {
-              e.preventDefault();
-              onCloseModal();
-              setShow(true)
-
-              const categoryId = categoryInput.current.value ? category.find((category) => category.name === categoryInput.current.value)._id : null;
-              const title = titleInput.current.value || manga.title;
-              const cover_photo = imageInput.current.value || manga.cover_photo;
-              const description = descriptionInput.current.value || manga.description;
-              const category_id = categoryId || manga.category_id._id;
-              const id = manga._id;
-
-              dispatch(updateManga({ id, title, cover_photo, description, category_id }));
-
-              /* axios
-                .put(`https://backendminga.onrender.com/mangas/${id}`, {
-                  title,
-                  cover_photo,
-                  description,
-                  category_id,
-                }, {
-                  headers: { Authorization: `Bearer ${token}` },
-                })
-                .then((res) => {
-                  console.log(res.data.message)
-                  setAlert([res.data.message]);
-
-                  console.log(alert);
-                })
-                .catch((error) => {
-                  setShow(true)
-                  setAlert(error.response.data.message);
-                  console.log(alert);
-                  console.log(error);
-                }); */
-
-            }}
-          >Guardar
+            className="px-5 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm transition shadow-sm"
+          >
+            Save
           </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
 
-        </form>
-      </Modal>
-    </>
-  )
-}
-
-export default EditModal
+export default EditModal;

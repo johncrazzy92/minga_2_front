@@ -1,106 +1,125 @@
 import { useState, useEffect } from "react";
-//import axios from "axios";
 import NavBar from "../layouts/NavBar";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import NewManga from "../components/NewManga";
 import EditModal from "../components/EditModal";
 import AlertDelete from "../components/componentesMangas/AlertDelete.jsx";
-import Alert from "../components/componentesMangas/Alert2";
 import { useDispatch, useSelector } from "react-redux";
 import actions from "../redux/actions/mangas.js";
-const { mymangas } = actions;
 
+const { mymangas } = actions;
 
 const MyMangas = () => {
   const dispatch = useDispatch();
-  //  const [mangas, setMangas] = useState([]);
   const [manga, setManga] = useState({});
-  const [isOpen, setIsOpen] = useState(false)
-  // const [noElements, setNoElements] = useState(false);
-  const [alert, setAlert] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
-  const [show, setShow] = useState(false);
-  const token = localStorage.getItem("token");
-  let mangasList = useSelector(store => store.myMangasReducer?.mangas)
-  console.log(mangasList.mangas)
+
+  const mangasList = useSelector((store) => store.myMangasReducer?.mangas) || [];
+  const loading = useSelector((store) => store.myMangasReducer?.loading);
 
   useEffect(() => {
     dispatch(mymangas());
-    /* axios
-      .get(`https://backendminga.onrender.com/mangas/me`, {
-        headers: { authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        if (res.data.mangas.length === 0) {
-          setNoElements(true);
-        } else {
-          setNoElements(false);
-
-        }
-        setMangas(res.data.mangas);
-        console.log(res)
-      })
-      .catch((err) => console.log(err)); */
-
-  }, [token, dispatch]);
+  }, [dispatch]);
 
   return (
     <>
-      {show && <Alert setShow={setShow} show={show} alert={alert} />}
-      <img className="absolute max-h-[35vh] w-full object-cover rounded-b-2xl" src="public/img/image 15.jpg" alt="" />
+      <img
+        className="absolute max-h-[35vh] w-full object-cover rounded-b-2xl"
+        src="/img/image 15.jpg"
+        alt="Banner"
+      />
       <NavBar />
-      <div className="flex flex-col justify-center items-center">
-        <h1 className="text-4xl md:text-6xl py-28 z-30 text-white font-bold">My mangas</h1>
-        <div className="flex min-h-[80vh] flex-wrap justify-center items-center">
+      <div className="flex flex-col justify-center items-center w-full min-h-screen pt-12">
+        <h1 className="text-4xl md:text-6xl py-24 z-30 text-white font-bold">
+          My Mangas
+        </h1>
+
+        <div className="flex min-h-[50vh] flex-wrap justify-center items-center gap-6 px-4 py-8 max-w-6xl w-full">
           <NewManga />
 
-          {(!mangasList || mangasList.length === 0) ? (<div>nO HAY MANGAS</div>) : (
-            mangasList.map((manga) => (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center p-12">
+              <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="mt-4 text-gray-500">Loading your mangas...</p>
+            </div>
+          ) : mangasList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 bg-white rounded-2xl shadow-sm text-center max-w-md">
+              <span className="text-4xl mb-3">📚</span>
+              <h3 className="text-lg font-bold text-gray-800">No mangas published yet</h3>
+              <p className="text-gray-500 text-sm mt-1">
+                You haven&apos;t created any manga titles. Click the card on the left to publish your first manga!
+              </p>
+            </div>
+          ) : (
+            mangasList.map((item) => (
               <div
-                className="bg-white relative w-[290px] h-[160px] lg:w-[420px] lg:h-[210px] m-3 flex justify-between items-center rounded-lg drop-shadow-md"
-                key={manga._id}
+                className="bg-white relative w-[290px] h-[160px] lg:w-[400px] lg:h-[200px] flex justify-between items-center rounded-2xl shadow-md hover:shadow-lg transition overflow-hidden"
+                key={item._id}
               >
                 <div
-                  className="h-5/6 w-2"
-                  style={{ background: manga.category_id.color }}
+                  className="h-full w-2.5 flex-shrink-0"
+                  style={{ background: item.category_id?.color || "#f97316" }}
                 ></div>
-                <div className="flex flex-col">
-                  <div className="flex absolute top-0 left-4 gap-4">
-                    <Link to={"/chapter-form/" + manga._id} className="cursor-pointer">➕</Link>
-                    <Link to={"/edit/" + manga._id} className="cursor-pointer">✏️</Link>
-                  </div>
-                  <div className="text-sm lg:text-xl font-bold absolute top-8 left-6">
-                    {manga.title}
-                  </div>
-                  <div
-                    className="text-sm lg:text-md font-semibold absolute top-14 left-6"
-                    style={{ color: manga.category_id.color }}
-                  >
-                    {manga.category_id.name}
-                  </div>
-                  <div className="flex gap-2 absolute bottom-4 left-6">
-                    <button onClick={() => {
-                      setIsOpen(!isOpen)
-                      setManga(manga)
-                    }} className="bg-emerald-500 h-7 lg:h-8 w-20 rounded-lg ">
-                      edit
-                    </button>
-                    <button onClick={() => {
-                      setShowDelete(true)
-                      setManga(manga)
-                    }} className="bg-red-500 h-7 lg:h-8 w-20 rounded-lg ">
-                      delete
-                    </button>
 
+                <div className="flex flex-col justify-between p-4 flex-grow h-full">
+                  <div className="flex gap-3 items-center">
+                    <Link
+                      to={"/chapter-form/" + item._id}
+                      className="p-1.5 bg-orange-50 hover:bg-orange-100 rounded-lg text-sm transition"
+                      title="Add Chapter"
+                    >
+                      ➕ Add Chapter
+                    </Link>
+                    <Link
+                      to={"/edit/" + item._id}
+                      className="p-1.5 bg-blue-50 hover:bg-blue-100 rounded-lg text-sm transition"
+                      title="Manage Chapters"
+                    >
+                      📑 Chapters
+                    </Link>
                   </div>
 
+                  <div>
+                    <h3 className="text-base lg:text-lg font-bold text-gray-800 line-clamp-1">
+                      {item.title}
+                    </h3>
+                    <p
+                      className="text-xs font-semibold mt-0.5"
+                      style={{ color: item.category_id?.color || "#f97316" }}
+                    >
+                      {item.category_id?.name || "Manga"}
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setManga(item);
+                        setIsOpen(true);
+                      }}
+                      className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-xs py-1.5 px-4 rounded-full transition shadow-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        setManga(item);
+                        setShowDelete(true);
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white font-semibold text-xs py-1.5 px-4 rounded-full transition shadow-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                <div className="w-1/3">
+
+                <div className="w-28 lg:w-36 h-full flex-shrink-0">
                   <img
-                    className="h-[160px] lg:h-[210px]  object-cover rounded-l-full"
-                    src={manga.cover_photo}
-                    alt=""
+                    className="h-full w-full object-cover rounded-l-2xl"
+                    src={item.cover_photo || "/img/image 15.jpg"}
+                    alt={item.title}
                   />
                 </div>
               </div>
@@ -109,18 +128,21 @@ const MyMangas = () => {
         </div>
       </div>
       <Footer />
-      {isOpen && <EditModal
-        setShow={setShow}
-        setAlert={setAlert}
-        alert={alert}
-        manga={manga}
-        setIsOpen={setIsOpen}
-        isOpen={isOpen}
-        token={token}
-      />}
-      {showDelete && <AlertDelete setShowDelete={setShowDelete} showDelete={showDelete} show={show} setShow={setShow} token={token} manga={manga} alert={alert} setAlert={setAlert} />}
 
+      {isOpen && (
+        <EditModal
+          manga={manga}
+          setIsOpen={setIsOpen}
+          isOpen={isOpen}
+        />
+      )}
 
+      {showDelete && (
+        <AlertDelete
+          setShowDelete={setShowDelete}
+          manga={manga}
+        />
+      )}
     </>
   );
 };

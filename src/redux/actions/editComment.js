@@ -1,23 +1,15 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import apiClient from "../../services/apiClient.js";
 
 const editComment = createAsyncThunk('editComment', async (info, { rejectWithValue }) => {
-    try {
-        console.log(info)
-        const res = await axios.put(`https://backendminga.onrender.com/comments/${info.comment_id}`,
-            {
-                text: info.text
-            }, {
-            headers: {
-                Authorization: "Bearer " + info.token
-            },
-        });
-
-        return { comments: res.data.response };
-    } catch (error) {
-        console.log(error)
-        return rejectWithValue({ error: error.message });
-    }
+  try {
+    const config = info.token ? { headers: { Authorization: "Bearer " + info.token } } : {};
+    const res = await apiClient.put(`/comments/${info.comment_id}`, { text: info.text }, config);
+    return { comments: res.data.response };
+  } catch (error) {
+    console.error("edit comment error:", error);
+    return rejectWithValue({ error: error.message });
+  }
 });
 
 export default editComment;

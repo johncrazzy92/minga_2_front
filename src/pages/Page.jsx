@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import PageComments from "../components/PageComment";
-import { useParams } from "react-router-dom";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import apiClient from "../services/apiClient.js";
 import flechaManga from "../../public/img/FlechaManga.svg";
 import NavBar from "../layouts/NavBar";
 import Footer from "../components/Footer";
@@ -10,79 +9,119 @@ import { useSelector, useDispatch } from 'react-redux';
 import { saveChapter } from '../redux/actions/chapters';
 
 const Page = () => {
-  const APIurl = "https://backendminga.onrender.com";
   const [chapter, setChapter] = useState(null);
   const [next, setNext] = useState("");
+  const [loading, setLoading] = useState(true);
   const { id, page } = useParams();
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const { title, number } = useSelector((store) => store.chapter);
-  console.log(title)
-  console.log(number)
-  console.log(dispatch)
 
   useEffect(() => {
-    axios
-      .get(APIurl + `/chapters/${id}`)
+    if (!id) return;
+    setLoading(true);
+    apiClient
+      .get(`/chapters/${id}`)
       .then((res) => {
-
-        setChapter(res.data.all);
-        console.log(res);
-        setNext(res.data.next);
-        dispatch(saveChapter(res.data.all))
+        const chapterData = res.data.all || res.data.response || res.data.chapter;
+        setChapter(chapterData);
+        setNext(res.data.next || "");
+        if (chapterData) {
+          dispatch(saveChapter(chapterData));
+        }
       })
-      .catch((err) => console.log(err));
-  }, [id]);
-  console.log(chapter);
-  console.log(next);
+      .catch((err) => {
+        console.error("Error loading chapter page:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [id, dispatch]);
+
+  const currentPageNum = Number(page) || 1;
+  const totalPages = chapter?.pages?.length || 0;
+
   const handleNext = () => {
-    if (Number(page) >= chapter.pages.length - 1) {
-      navigate(`/chapterPage/${next}/${1}`);
+    if (!chapter || !chapter.pages) return;
+    if (currentPageNum >= totalPages) {
+      if (next) {
+        navigate(`/chapterPage/${next}/1`);
+      } else {
+        navigate(`/manga/${chapter.manga_id}`);
+      }
     } else {
-      navigate(`/chapterPage/${id}/${Number(page) + 1}`);
+      navigate(`/chapterPage/${id}/${currentPageNum + 1}`);
     }
   };
 
   const handlePrev = () => {
-    if (Number(page) <= 1) {
+    if (!chapter) return;
+    if (currentPageNum <= 1) {
       navigate(`/manga/${chapter.manga_id}`);
     } else {
-      navigate(`/chapterPage/${id}/${Number(page) - 1} `);
+      navigate(`/chapterPage/${id}/${currentPageNum - 1}`);
     }
   };
 
   return (
     <>
       <NavBar />
-      <div className="w-full">
-        <div className="w-full h-28 bg-gradient-to-t from-orange-500 to-orange-600 text-center flex flex-col justify-center items-center">
-          <p className="text-white text-xs">N : {Number(number)}</p>
-          <p className="text-white text-xs"> {title}</p>
-        </div>
-        <div className="w-full  mt-5 flex items-center justify-center">
-          <div onClick={handlePrev} className="w-1/2">
-            <img
-              className=" cursor-pointer absolute left-5 bg-white rounded-full p-2 opacity-50"
-              src={flechaManga}
-              alt=""
-            />
+      <div className="w-full min-h-screen bg-gray-50 flex flex-col justify-between">
+        <div>
+          <div className="w-full h-28 bg-gradient-to-t from-orange-500 to-orange-600 text-center flex flex-col justify-center items-center shadow-sm">
+            <p className="text-white text-xs font-semibold uppercase tracking-wider">
+              Chapter #{Number(number) || chapter?.order || ""} — Page {currentPageNum} of {totalPages}
+            </p>
+            <h1 className="text-white text-lg font-bold mt-1">{title || chapter?.title || ""}</h1>
           </div>
-          <img
-            className=" md-w-10/12 h-full"
-            src={chapter?.pages[Number(page) - 1]}
-            alt=""
-          />
-          <div onClick={handleNext} className="w-1/2">
-            <img
-              className="cursor-pointer rotate-180 absolute right-5 bg-white rounded-full p-2 opacity-50"
-              src={flechaManga}
-              alt=""
-            />
-          </div>
+
+          {loading ? (
+            <div className="w-full py-32 flex flex-col justify-center items-center">
+              <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="mt-4 text-gray-500 text-sm">Loading page...</p>
+            </div>
+          ) : !chapter || !chapter.pages || chapter.pages.length === 0 ? (
+            <div className="w-full py-32 flex flex-col justify-center items-center text-center px-4">
+              <p className="text-gray-600 text-lg">No pages available for this chapter.</p>
+              <button
+                onClick={() => navigate(-1)}
+                className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:bg-orange-600 transition"
+              >
+                Go Back
+              </button>
+            </div>
+          ) : (
+            <div className="w-full mt-6 flex items-center justify-center relative px-4 max-w-4xl mx-auto">
+              <div onClick={handlePrev} className="cursor-pointer z-10" title="Previous page">
+                <img
+                  className="bg-white rounded-full p-3 shadow-md hover:scale-105 transition opacity-80 hover:opacity-100"
+                  src={flechaManga}
+                  alt="Previous"
+                />
+              </div>
+
+              <div className="flex-1 flex justify-center items-center px-4">
+                <img
+                  className="max-h-[75vh] w-auto object-contain rounded-lg shadow-lg border"
+                  src={chapter?.pages[currentPageNum - 1]}
+                  alt={`Page ${currentPageNum}`}
+                />
+              </div>
+
+              <div onClick={handleNext} className="cursor-pointer z-10" title="Next page">
+                <img
+                  className="rotate-180 bg-white rounded-full p-3 shadow-md hover:scale-105 transition opacity-80 hover:opacity-100"
+                  src={flechaManga}
+                  alt="Next"
+                />
+              </div>
+            </div>
+          )}
+
+          <PageComments />
         </div>
-        <PageComments />
+        <Footer />
       </div>
-      <Footer />
     </>
   );
 };

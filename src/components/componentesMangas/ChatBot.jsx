@@ -79,7 +79,7 @@ export default function Chatbot() {
             {chatOpen && (
                 <div>
                     <button className="close-button" onClick={closeChat}>
-                        <img className='h-7 w-7' src="public/img/x.png" alt="" />
+                        <img className='h-7 w-7' src="/img/x.png" alt="Close" />
                     </button>
                     <form onSubmit={sendMsg} className='bg-orange-500 w-full min-h-[320px] max-h-[500px] border-4 flex flex-col items-center rounded-lg'>
                         <div className='w-full min-h-[320px] max-h-[500px] overflow-y-auto mb-1 bg-white'>

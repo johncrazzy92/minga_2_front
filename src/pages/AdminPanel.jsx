@@ -7,35 +7,35 @@ import { getAuthors } from "../redux/actions/getAuthors";
 import { updateActive } from "../redux/actions/updateActive";
 import AlertAcept from "../components/componentesMangas/AlerteAcept";
 
-
 export const AdminPanel = () => {
   const [show, setShow] = useState(false);
   const [id, setId] = useState();
-  const token = localStorage.getItem("token");
   const dispatch = useDispatch();
-  const role = useSelector((store) => store.me_authorsReducer.user.role);
+  const role = useSelector((store) => store.me_authorsReducer?.user?.role);
   const navigate = useNavigate();
+
   useEffect(() => {
-    if (role !== 3) {
+    if (role !== undefined && role !== 3) {
       navigate("/");
     }
-  }, [role]);
-  const authors = useSelector((store) => store.authors);
-  const inactives = authors.inactive;
-  const actives = authors.active;
+  }, [role, navigate]);
+
+  const authors = useSelector((store) => store.authors) || {};
+  const inactives = authors.inactive || [];
+  const actives = authors.active || [];
 
   useEffect(() => {
     if (authors.firstReq === false) {
-      dispatch(getAuthors(token));
+      dispatch(getAuthors());
     }
-  }, []);
-  //-------------------------------------------------------------------mayus
+  }, [authors.firstReq, dispatch]);
+
   function upper(name) {
     return name ? name.charAt(0).toUpperCase() + name.slice(1) : "";
   }
-  //--------------------------updater
-  function activeUpdater(id) {
-    dispatch(updateActive(id));
+
+  function activeUpdater(selectedId) {
+    dispatch(updateActive(selectedId));
     setShow(!show);
   }
 
@@ -67,8 +67,8 @@ export const AdminPanel = () => {
           </h2>
           <table className="min-h-[10vh] bg-slate-200 rounded-xl shadow-sm border border-gray-300 w-full ">
             <thead>
-              <tr className="h-9  bg-orange-600">
-                <th colSpan={4} className="text-white ">
+              <tr className="h-9 bg-orange-600">
+                <th colSpan={5} className="text-white">
                   Authors
                 </th>
               </tr>
@@ -94,9 +94,9 @@ export const AdminPanel = () => {
                     </td>
                     <td className="flex justify-center">
                       <img
-                        className="bg-black w-8 h-8 rounded-full"
-                        src={inactive?.photo}
-                        alt="imagen"
+                        className="bg-black w-8 h-8 rounded-full object-cover"
+                        src={inactive?.photo || "/img/image 15.jpg"}
+                        alt="Author"
                       />
                     </td>
                     <td className="flex justify-center">
@@ -111,13 +111,14 @@ export const AdminPanel = () => {
                             className="sr-only"
                           />
                           <div
-                            className={`box ${inactive.active ? "bg-orange-600" : "bg-gray-400"
-                              } block h-6 w-12 rounded-full`}
+                            className={`box ${
+                              inactive.active ? "bg-orange-600" : "bg-gray-400"
+                            } block h-6 w-12 rounded-full`}
                           ></div>
                           <div
-                            className={`dot absolute bg-white top-1 flex h-4 w-4 items-center justify-center rounded-full transition ${inactive.active ? "right-1" : "left-1"
-                              }
-                            `}
+                            className={`dot absolute bg-white top-1 flex h-4 w-4 items-center justify-center rounded-full transition ${
+                              inactive.active ? "right-1" : "left-1"
+                            }`}
                           ></div>
                         </div>
                       </label>
@@ -126,7 +127,6 @@ export const AdminPanel = () => {
                 );
               })}
               {actives?.map((active, index) => {
-                console.log(active._id);
                 return (
                   <tr
                     key={index}
@@ -146,9 +146,9 @@ export const AdminPanel = () => {
                     </td>
                     <td className="flex justify-center">
                       <img
-                        className="bg-black w-8 h-8 rounded-full"
-                        src={active?.photo}
-                        alt="imagen"
+                        className="bg-black w-8 h-8 rounded-full object-cover"
+                        src={active?.photo || "/img/image 15.jpg"}
+                        alt="Author"
                       />
                     </td>
                     <td className="flex justify-center">
@@ -163,13 +163,14 @@ export const AdminPanel = () => {
                             className="sr-only"
                           />
                           <div
-                            className={`box ${active.active ? "bg-orange-600" : "bg-gray-400"
-                              } block h-6 w-12 rounded-full`}
+                            className={`box ${
+                              active.active ? "bg-orange-600" : "bg-gray-400"
+                            } block h-6 w-12 rounded-full`}
                           ></div>
                           <div
-                            className={`dot absolute bg-white top-1 flex h-4 w-4 items-center justify-center rounded-full transition ${active.active ? "right-1" : "left-1"
-                              }
-                            `}
+                            className={`dot absolute bg-white top-1 flex h-4 w-4 items-center justify-center rounded-full transition ${
+                              active.active ? "right-1" : "left-1"
+                            }`}
                           ></div>
                         </div>
                       </label>
@@ -184,4 +185,3 @@ export const AdminPanel = () => {
     </>
   );
 };
-

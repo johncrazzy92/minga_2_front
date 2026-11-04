@@ -1,19 +1,14 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import apiClient from "../../services/apiClient.js";
 
-const updateActive = createAsyncThunk("updateActive", async (id) => {
-    const token = localStorage.getItem("token")
-    const author = await axios.put(
-        `https://backendminga.onrender.com/authors/role/author/${id}`, null,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }
-    );
-
-
+const updateActive = createAsyncThunk("updateActive", async (id, { rejectWithValue }) => {
+  try {
+    const author = await apiClient.put(`/authors/role/author/${id}`, null);
     return author.data;
+  } catch (error) {
+    console.error("error updateActive", error);
+    return rejectWithValue(error.response?.data || { message: error.message });
+  }
 });
 
 export { updateActive };
